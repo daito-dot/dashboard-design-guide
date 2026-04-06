@@ -10,7 +10,7 @@
   "plugins": [
     {
       "name": "dashboard-design-guide",
-      "source": "./",
+      "source": "./plugins/dashboard-design-guide",
       "description": "対話的にダッシュボードを設計・構築するスキル",
       "version": "1.0.0"
     }
