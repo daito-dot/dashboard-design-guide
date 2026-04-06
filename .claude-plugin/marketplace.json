@@ -1,0 +1,18 @@
+{
+  "name": "dashboard-design-guide",
+  "owner": {
+    "name": "daito"
+  },
+  "metadata": {
+    "description": "デジタル庁ダッシュボードデザインガイドブックに基づく対話的なダッシュボード設計・構築",
+    "version": "1.0.0"
+  },
+  "plugins": [
+    {
+      "name": "dashboard-design-guide",
+      "source": "./",
+      "description": "対話的にダッシュボードを設計・構築するスキル",
+      "version": "1.0.0"
+    }
+  ]
+}

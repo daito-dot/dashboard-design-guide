@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>ダッシュボード レイアウト比較</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    /*
+     * DASHBOARD DESIGN COMPANION FRAME TEMPLATE
+     *
+     * Based on superpowers brainstorming frame (MIT License, Jesse Vincent).
+     * Customized for dashboard mockup comparison:
+     * - Dashboard CSS classes in .mockup-body scope (greyscale wireframe)
+     * - Chart.js CDN for Step 2 chart comparison
+     * - Tab switching UI for Step 4 layout comparison
+     */
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { height: 100%; overflow: hidden; }
+
+    /* ===== THEME VARIABLES ===== */
+    :root {
+      --bg-primary: #f5f5f7;
+      --bg-secondary: #ffffff;
+      --bg-tertiary: #e5e5e7;
+      --border: #d1d1d6;
+      --text-primary: #1d1d1f;
+      --text-secondary: #86868b;
+      --text-tertiary: #aeaeb2;
+      --accent: #0071e3;
+      --accent-hover: #0077ed;
+      --success: #34c759;
+      --warning: #ff9f0a;
+      --error: #ff3b30;
+      --selected-bg: #e8f4fd;
+      --selected-border: #0071e3;
+    }
+
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg-primary: #1d1d1f;
+        --bg-secondary: #2d2d2f;
+        --bg-tertiary: #3d3d3f;
+        --border: #424245;
+        --text-primary: #f5f5f7;
+        --text-secondary: #86868b;
+        --text-tertiary: #636366;
+        --accent: #0a84ff;
+        --accent-hover: #409cff;
+        --selected-bg: rgba(10, 132, 255, 0.15);
+        --selected-border: #0a84ff;
+      }
+    }
+
+    body {
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+      background: var(--bg-primary);
+      color: var(--text-primary);
+      display: flex;
+      flex-direction: column;
+      line-height: 1.5;
+    }
+
+    /* ===== FRAME STRUCTURE ===== */
+    .header {
+      background: var(--bg-secondary);
+      padding: 0.5rem 1.5rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid var(--border);
+      flex-shrink: 0;
+    }
+    .header h1 { font-size: 0.85rem; font-weight: 500; color: var(--text-secondary); }
+    .header .status { font-size: 0.7rem; color: var(--success); display: flex; align-items: center; gap: 0.4rem; }
+    .header .status::before { content: ''; width: 6px; height: 6px; background: var(--success); border-radius: 50%; }
+
+    .main { flex: 1; overflow-y: auto; }
+    #claude-content { padding: 2rem; min-height: 100%; }
+
+    .indicator-bar {
+      background: var(--bg-secondary);
+      border-top: 1px solid var(--border);
+      padding: 0.5rem 1.5rem;
+      flex-shrink: 0;
+      text-align: center;
+    }
+    .indicator-bar span {
+      font-size: 0.75rem;
+      color: var(--text-secondary);
+    }
+    .indicator-bar .selected-text {
+      color: var(--accent);
+      font-weight: 500;
+    }
+
+    /* ===== TYPOGRAPHY ===== */
+    h2 { font-size: 1.5rem; font-weight: 600; margin-bottom: 0.5rem; }
+    h3 { font-size: 1.1rem; font-weight: 600; margin-bottom: 0.25rem; }
+    .subtitle { color: var(--text-secondary); margin-bottom: 1.5rem; }
+    .section { margin-bottom: 2rem; }
+    .label { font-size: 0.7rem; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.5rem; }
+
+    /* ===== OPTIONS (for A/B/C choices) ===== */
+    .options { display: flex; flex-direction: column; gap: 0.75rem; }
+    .option {
+      background: var(--bg-secondary);
+      border: 2px solid var(--border);
+      border-radius: 12px;
+      padding: 1rem 1.25rem;
+      cursor: pointer;
+      transition: all 0.15s ease;
+      display: flex;
+      align-items: flex-start;
+      gap: 1rem;
+    }
+    .option:hover { border-color: var(--accent); }
+    .option.selected { background: var(--selected-bg); border-color: var(--selected-border); }
+    .option .letter {
+      background: var(--bg-tertiary);
+      color: var(--text-secondary);
+      width: 1.75rem; height: 1.75rem;
+      border-radius: 6px;
+      display: flex; align-items: center; justify-content: center;
+      font-weight: 600; font-size: 0.85rem; flex-shrink: 0;
+    }
+    .option.selected .letter { background: var(--accent); color: white; }
+    .option .content { flex: 1; }
+    .option .content h3 { font-size: 0.95rem; margin-bottom: 0.15rem; }
+    .option .content p { color: var(--text-secondary); font-size: 0.85rem; margin: 0; }
+
+    /* ===== CARDS (for showing designs/mockups) ===== */
+    .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1rem; }
+    .cards > .card {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      overflow: hidden;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+    .cards > .card:hover { border-color: var(--accent); transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+    .cards > .card.selected { border-color: var(--selected-border); border-width: 2px; }
+    .card-image { background: var(--bg-tertiary); aspect-ratio: 16/10; display: flex; align-items: center; justify-content: center; }
+    .card-body { padding: 1rem; }
+    .card-body h3 { margin-bottom: 0.25rem; }
+    .card-body p { color: var(--text-secondary); font-size: 0.85rem; }
+
+    /* ===== MOCKUP CONTAINER ===== */
+    .mockup {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      overflow: hidden;
+      margin-bottom: 1.5rem;
+    }
+    .mockup-header {
+      background: var(--bg-tertiary);
+      padding: 0.5rem 1rem;
+      font-size: 0.75rem;
+      color: var(--text-secondary);
+      border-bottom: 1px solid var(--border);
+    }
+    .mockup-body { padding: 1.5rem; }
+
+    /* ===== SPLIT VIEW (side-by-side comparison) ===== */
+    .split { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; }
+    @media (max-width: 700px) { .split { grid-template-columns: 1fr; } }
+
+    /* ===== PROS/CONS ===== */
+    .pros-cons { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin: 1rem 0; }
+    .pros, .cons { background: var(--bg-secondary); border-radius: 8px; padding: 1rem; }
+    .pros h4 { color: var(--success); font-size: 0.85rem; margin-bottom: 0.5rem; }
+    .cons h4 { color: var(--error); font-size: 0.85rem; margin-bottom: 0.5rem; }
+    .pros ul, .cons ul { margin-left: 1.25rem; font-size: 0.85rem; color: var(--text-secondary); }
+    .pros li, .cons li { margin-bottom: 0.25rem; }
+
+    /* ===== PLACEHOLDER (for mockup areas) ===== */
+    .placeholder {
+      background: var(--bg-tertiary);
+      border: 2px dashed var(--border);
+      border-radius: 8px;
+      padding: 2rem;
+      text-align: center;
+      color: var(--text-tertiary);
+    }
+
+    /* ===== INLINE MOCKUP ELEMENTS ===== */
+    .mock-nav { background: var(--accent); color: white; padding: 0.75rem 1rem; display: flex; gap: 1.5rem; font-size: 0.9rem; }
+    .mock-sidebar { background: var(--bg-tertiary); padding: 1rem; min-width: 180px; }
+    .mock-content { padding: 1.5rem; flex: 1; }
+    .mock-button { background: var(--accent); color: white; border: none; padding: 0.5rem 1rem; border-radius: 6px; font-size: 0.85rem; }
+    .mock-input { background: var(--bg-primary); border: 1px solid var(--border); border-radius: 6px; padding: 0.5rem; width: 100%; }
+
+    /* ===== TAB SWITCHING (Step 4 layout comparison) ===== */
+    .tab-bar {
+      display: flex;
+      gap: 0;
+      border-bottom: 2px solid var(--border);
+      margin-bottom: 1.5rem;
+    }
+    .tab-bar button {
+      background: none;
+      border: none;
+      border-bottom: 2px solid transparent;
+      margin-bottom: -2px;
+      padding: 0.6rem 1.2rem;
+      font-size: 0.9rem;
+      color: var(--text-secondary);
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+    .tab-bar button:hover { color: var(--text-primary); }
+    .tab-bar button.active {
+      color: var(--accent);
+      border-bottom-color: var(--accent);
+      font-weight: 600;
+    }
+    .tab-panel { display: none; }
+    .tab-panel.active { display: block; }
+
+    /* ============================================================
+     * DASHBOARD WIREFRAME CLASSES
+     *
+     * These mirror the production dashboard CSS classes but render
+     * in greyscale for wireframe comparison. Scoped to .mockup-body
+     * to avoid collision with the frame's own .card class.
+     * ============================================================ */
+
+    .mockup-body .dashboard-grid {
+      display: grid;
+      grid-template-columns: repeat(6, 1fr);
+      gap: 12px;
+      padding: 16px;
+      background: #F0F0F3;
+      border-radius: 6px;
+    }
+
+    .mockup-body .card {
+      background: #FFFFFF;
+      border: 1px solid #D2D2D8;
+      border-radius: 8px;
+      padding: 16px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+      font-size: 12px;
+      color: #3D3D3F;
+    }
+
+    /* Span utilities (same as production) */
+    .mockup-body .kpi-card     { grid-column: span 1; }
+    .mockup-body .chart-small  { grid-column: span 2; }
+    .mockup-body .chart-medium { grid-column: span 3; }
+    .mockup-body .chart-large  { grid-column: span 4; }
+    .mockup-body .chart-full   { grid-column: span 6; }
+
+    /* Chart container wireframe */
+    .mockup-body .chart-container {
+      min-height: 160px;
+      display: flex;
+      flex-direction: column;
+    }
+    .mockup-body .chart-container .card-title {
+      font-size: 12px;
+      font-weight: 600;
+      color: #3D3D3F;
+      margin-bottom: 8px;
+    }
+    .mockup-body .chart-container canvas {
+      flex: 1;
+      width: 100% !important;
+    }
+
+    /* KPI card wireframe */
+    .mockup-body .kpi-card .kpi-label {
+      font-size: 11px;
+      color: #626264;
+      margin-bottom: 4px;
+    }
+    .mockup-body .kpi-card .kpi-value {
+      font-size: 24px;
+      font-weight: 700;
+      color: #1d1d1f;
+    }
+    .mockup-body .kpi-card .kpi-change {
+      font-size: 11px;
+      margin-top: 4px;
+    }
+    .mockup-body .kpi-change.positive { color: #197A4B; }
+    .mockup-body .kpi-change.negative { color: #CE0000; }
+
+    /* Filter panel wireframe */
+    .mockup-body .filter-panel {
+      background: #FFFFFF;
+      border: 1px solid #D2D2D8;
+      border-radius: 8px;
+      padding: 16px;
+    }
+    .mockup-body .filter-group {
+      margin-bottom: 12px;
+    }
+    .mockup-body .filter-label {
+      font-size: 11px;
+      color: #626264;
+      display: block;
+      margin-bottom: 4px;
+    }
+    .mockup-body .filter-select {
+      width: 100%;
+      padding: 4px 8px;
+      border: 1px solid #D2D2D8;
+      border-radius: 4px;
+      font-size: 12px;
+      background: #F1F1F4;
+    }
+
+    /* Table wireframe */
+    .mockup-body .table-container {
+      overflow-x: auto;
+    }
+    .mockup-body .data-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 12px;
+    }
+    .mockup-body .data-table th {
+      background: #F1F1F4;
+      padding: 6px 10px;
+      text-align: left;
+      font-weight: 600;
+      border-bottom: 2px solid #D2D2D8;
+      color: #3D3D3F;
+    }
+    .mockup-body .data-table td {
+      padding: 6px 10px;
+      border-bottom: 1px solid #E8E8EC;
+      color: #3D3D3F;
+    }
+
+    /* Greyscale Chart.js palette for wireframe charts */
+    .mockup-body { --wf-series-1: #5C5C5C; --wf-series-2: #9E9E9E; --wf-series-3: #C4C4C4; }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <h1>ダッシュボード デザインコンパニオン</h1>
+    <div class="status">Connected</div>
+  </div>
+
+  <div class="main">
+    <div id="claude-content">
+      <!-- CONTENT -->
+    </div>
+  </div>
+
+  <div class="indicator-bar">
+    <span id="indicator-text">選択肢をクリックしてからターミナルに戻ってください</span>
+  </div>
+
+</body>
+</html>

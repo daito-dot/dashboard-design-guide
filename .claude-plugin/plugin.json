@@ -1,0 +1,9 @@
+{
+  "name": "dashboard-design-guide",
+  "version": "1.0.0",
+  "description": "デジタル庁ダッシュボードデザインガイドブックに基づく対話的なダッシュボード設計・構築",
+  "author": {
+    "name": "daito"
+  },
+  "license": "MIT"
+}
